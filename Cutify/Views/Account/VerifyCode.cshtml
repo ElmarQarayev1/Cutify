@@ -1,0 +1,245 @@
+﻿@model Cutify.Models.ViewModels.VerifyCodeViewModel
+
+@{
+    ViewData["Title"] = "Kod təsdiqi";
+}
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            width: 100%;
+            max-width: 540px;
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: relative;
+        }
+
+        .back-button {
+            margin-bottom: 30px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+            .back-button:hover {
+                background-color: #f5f5f5;
+            }
+
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #212121;
+        }
+
+        p {
+            color: #757575;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .verification-container {
+            margin-top: 20px;
+        }
+
+        .verification-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .code-input {
+            width: 70px;
+            height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+
+        .timer {
+            text-align: right;
+            margin-bottom: 10px;
+            color: #757575;
+        }
+
+        .resend {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+
+            .resend a {
+                color: #000;
+                font-weight: bold;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+
+        .action-btn {
+            width: 100%;
+            background-color: #212121;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+            .action-btn:hover {
+                background-color: #000;
+            }
+
+        @@media (max-width: 480px) {
+            .code-input {
+                width: 60px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-button" onclick="window.history.back();">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+            </svg>
+        </div>
+
+        <h1>Hesabını təsdiq et</h1>
+        <p>@Model.Email e-poçt ünvanına göndərilən təsdiq kodunu daxil edərək hesabını təsdiqlə.</p>
+
+        <form asp-action="VerifyCode" method="post">
+            <div class="verification-container">
+                <div class="verification-inputs">
+                    <input type="text" class="code-input" name="code1" maxlength="1" required />
+                    <input type="text" class="code-input" name="code2" maxlength="1" required />
+                    <input type="text" class="code-input" name="code3" maxlength="1" required />
+                    <input type="text" class="code-input" name="code4" maxlength="1" required />
+                </div>
+
+                <input type="hidden" id="code" name="code" />
+                <div class="timer" id="timer">01:00</div>
+                <div class="resend" id="resend-container" style="display: none;">
+                    <a href="#" id="resend-link">Yenidən kod göndərin</a>
+                </div>
+
+                <button class="action-btn" type="submit">Təsdiq et</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+<script>document.addEventListener('DOMContentLoaded', function () {
+        var inputs = document.querySelectorAll('.code-input');
+
+        inputs.forEach(function (input, index) {
+            input.addEventListener('input', function () {
+                if (input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+        });
+
+}); document.addEventListener('DOMContentLoaded', function () {
+    var timerElement = document.getElementById('timer');
+    var resendContainer = document.getElementById('resend-container');
+    var resendLink = document.getElementById('resend-link');
+
+    var timeRemaining = 10; 
+    var interval = setInterval(function () {
+        timeRemaining--;
+
+        var minutes = Math.floor(timeRemaining / 60);
+        var seconds = timeRemaining % 60;
+
+       
+        timerElement.textContent = (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+        
+        if (timeRemaining <= 0) {
+            clearInterval(interval);
+            resendContainer.style.display = 'block';
+        }
+    }, 1000);
+
+  
+    let canResend = true;  
+
+    resendLink.addEventListener('click', function () {
+        if (canResend) {
+            canResend = false; 
+            fetch('/account/ResendCode', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);  
+
+                        timeRemaining = 60;
+                        resendContainer.style.display = 'none';
+                        timerElement.textContent = '01:00';
+                        interval = setInterval(function () {
+                            timeRemaining--;
+                            var minutes = Math.floor(timeRemaining / 60);
+                            var seconds = timeRemaining % 60;
+                            timerElement.textContent = (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+                            if (timeRemaining <= 0) {
+                                clearInterval(interval);
+                                resendContainer.style.display = 'block';
+                                canResend = true; 
+                            }
+                        }, 1000);
+                    } else {
+                        alert('Kod gönderilemedi, lütfen tekrar deneyin.');
+                        canResend = true;  
+                    }
+                })
+                .catch(error => {
+                    alert('Kod gönderilemedi, lütfen tekrar deneyin.');
+                    canResend = true;  
+                });
+        } else {
+            alert("Lütfen 60 saniye bekleyin ve tekrar deneyin.");
+        }
+    });
+
+
+});
+
+    </script>
+

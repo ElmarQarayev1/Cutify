@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Error";
+}
+
+<h1>Error</h1>
+<p>Üzr istəyirik, bir səhv baş verdi. Zəhmət olmasa bir azdan yenidən cəhd edin və ya aşağıdakı məlumatları qeyd edin.</p>
+
+@if (ViewData["Exception"] != null)
+{
+    <h2>Səhv Detalları:</h2>
+    <p><strong>Mesaj:</strong> @ViewData["ExceptionMessage"]</p>
+    <p><strong>StackTrace:</strong> @ViewData["StackTrace"]</p>
+}
+
+<p><a href="@Url.Action("Index", "Home")">Ana səhifəyə qayıt</a></p>

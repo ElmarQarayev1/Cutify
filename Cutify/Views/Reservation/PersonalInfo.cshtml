@@ -1,0 +1,657 @@
+﻿@model Cutify.Models.ViewModels.ReservationViewModel
+@{
+    ViewData["Title"] = "Rezervasiya";
+    var now = DateTime.Now;
+    var currentMonth = now.Month;
+    var currentYear = now.Year;
+    var firstDayOfMonth = new DateTime(currentYear, currentMonth, 1);
+    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+    var daysInMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+    var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+    if (startDayOfWeek == 0) startDayOfWeek = 7;
+
+    var monthNames = new[] { "Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr" };
+    var dayNames = new[] { "B.e", "Ç.a", "Ç.", "C.a", "C.", "Ş.", "B." };
+}
+
+<div class="reservation-container">
+    <form asp-action="PersonalInfo" method="post" id="reservationForm">
+        <div class="back-button">
+            <a href="@Url.Action("SelectBarber", "Reservation")">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 19L8 12L15 5" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </a>
+        </div>
+
+        <div class="reservation-header">
+            <h1>Məlumatlarını daxil et</h1>
+            <p>Şəxsi məlumatlarını yazaraq rezervasiyanı asanlıqla tamamlaya bilərsən.</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-filled" style="width: 66%;"></div>
+        </div>
+
+        <!-- Hidden fields for form submission -->
+        <input type="hidden" asp-for="BarberId" value="@ViewBag.BarberId" />
+        <input type="hidden" asp-for="ReservationDate" id="reservationDateInput" />
+        <input type="hidden" asp-for="TimeInput" id="reservationTimeInput" />
+
+
+        <!-- Barber Info Section -->
+        <div class="form-group">
+            <label>Bərbərin adı və soyadı</label>
+            <input type="text" value="@ViewBag.BarberFullName" class="form-control" readonly />
+        </div>
+
+        <!-- Date & Time Section -->
+        <div id="dateTimeContainer" class="form-section">
+            <div class="section-header" id="toggleCalendar">
+                <div class="form-group">
+                    <label>Tarix və Saat</label>
+                    <input type="text" id="selectedDateTimeDisplay" class="form-control" readonly placeholder="Tarix və saat seçin" />
+                </div>
+            </div>
+
+           
+            <div id="calendarSection" class="calendar-section" style="display: none;">
+                <div class="calendar-header">
+                    <div class="month-display">
+                        <span id="currentMonth">@monthNames[currentMonth - 1] @currentYear</span>
+                    </div>
+                    <div class="calendar-navigation">
+                        <button type="button" class="nav-btn prev-month" id="prevMonth">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 19L8 12L15 5" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                        <button type="button" class="nav-btn next-month" id="nextMonth">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 5L16 12L9 19" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid">
+                    <!-- Day names -->
+                    <div class="calendar-days">
+                        @foreach (var day in dayNames)
+                        {
+                            <div class="day-name">@day</div>
+                        }
+                    </div>
+
+                    <!-- Calendar dates -->
+                    <div class="calendar-dates" id="calendarDates">
+                        @{
+                            // Empty cells before the first day of month
+                            for (int i = 1; i < startDayOfWeek; i++)
+                            {
+                                <div class="date-cell empty"></div>
+                            }
+
+                            // Days of the month
+                            for (int day = 1; day <= daysInMonth; day++)
+                            {
+                                var date = new DateTime(currentYear, currentMonth, day);
+                                var isToday = date.Date == DateTime.Today;
+                                var isPast = date.Date < DateTime.Today;
+                                var cellClass = isPast ? "date-cell past" : (isToday ? "date-cell today" : "date-cell");
+                                var formattedDate = date.ToString("yyyy-MM-dd");
+
+                                <div class="@cellClass" data-date="@formattedDate">@day</div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Time Selection Section (Hidden initially, shown after date selection) -->
+                <div id="timeSelectionSection" class="time-selection-section" style="display: none;">
+                    <h2>Saat seçimi</h2>
+
+                    <div class="time-section">
+                        <h3>Səhər</h3>
+                        <div class="time-slots">
+                            <button type="button" class="time-slot" data-time="09:00">9:00</button>
+                            <button type="button" class="time-slot" data-time="09:30">9:30</button>
+                            <button type="button" class="time-slot" data-time="10:00">10:00</button>
+                            <button type="button" class="time-slot" data-time="10:30">10:30</button>
+                            <button type="button" class="time-slot" data-time="11:00">11:00</button>
+                            <button type="button" class="time-slot" data-time="11:30">11:30</button>
+                        </div>
+                    </div>
+
+                    <div class="time-section">
+                        <h3>Günorta</h3>
+                        <div class="time-slots">
+                            <button type="button" class="time-slot" data-time="12:00">12:00</button>
+                            <button type="button" class="time-slot" data-time="12:30">12:30</button>
+                            <button type="button" class="time-slot" data-time="13:00">13:00</button>
+                            <button type="button" class="time-slot" data-time="13:30">13:30</button>
+                            <button type="button" class="time-slot" data-time="14:00">14:00</button>
+                            <button type="button" class="time-slot" data-time="14:30">14:30</button>
+                        </div>
+                    </div>
+
+                    <div class="time-section">
+                        <h3>Axşam</h3>
+                        <div class="time-slots">
+                            <button type="button" class="time-slot" data-time="15:00">15:00</button>
+                            <button type="button" class="time-slot" data-time="15:30">15:30</button>
+                            <button type="button" class="time-slot" data-time="16:00">16:00</button>
+                            <button type="button" class="time-slot" data-time="16:30">16:30</button>
+                            <button type="button" class="time-slot" data-time="17:00">17:00</button>
+                            <button type="button" class="time-slot" data-time="17:30">17:30</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="confirmDateTime" class="confirm-button">Təsdiq et</button>
+            </div>
+        </div>
+
+        <!-- Personal Info Section -->
+        <div class="form-group">
+            <label>Ad və soyad</label>
+            <input type="text" id="customerFullName" name="CustomerFullName" class="form-control" placeholder="Ad və soyadınızı daxil edin" required />
+            <span class="text-danger" id="customerFullNameError"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Mobil nömrə</label>
+            <input type="tel" id="customerPhone" name="CustomerPhone" class="form-control" placeholder="+994 xx xxx xx xx" required />
+            <span class="text-danger" id="customerPhoneError"></span>
+        </div>
+
+        <div class="bottom-actions">
+            <button type="submit" class="submit-button" id="submitButton" disabled>Tamamla</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+        background-color: #f5f5f5;
+    }
+
+    .reservation-container {
+        max-width: 768px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+        .back-button a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+    .reservation-header {
+        margin-bottom: 30px;
+    }
+
+        .reservation-header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #212121;
+        }
+
+        .reservation-header p {
+            font-size: 16px;
+            color: #757575;
+            line-height: 1.5;
+        }
+
+    .progress-bar {
+        height: 4px;
+        background-color: #E0E0E0;
+        border-radius: 2px;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .progress-filled {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background-color: #212121;
+        border-radius: 2px;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 16px;
+        background-color: #fff;
+        cursor: pointer;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 16px;
+    }
+
+    .half {
+        flex: 1;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    label {
+        font-size: 14px;
+        color: #616161;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        font-size: 16px;
+        color: #212121;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #9E9E9E;
+            background-color: white;
+        }
+
+        .form-control::placeholder {
+            color: #BDBDBD;
+        }
+
+        .form-control[readonly] {
+            background-color: #f1f1f1;
+            color: #757575;
+        }
+
+    .bottom-actions {
+        margin-top: 32px;
+    }
+
+    .submit-button, .confirm-button {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        background-color: #212121;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: 6px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .confirm-button {
+        margin-top: 20px;
+    }
+
+        .submit-button:hover, .confirm-button:hover {
+            background-color: #000;
+        }
+
+        .submit-button:disabled, .confirm-button:disabled {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
+
+    /* Calendar Styles */
+    .calendar-section {
+        margin-bottom: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .month-display {
+        font-size: 18px;
+        font-weight: 600;
+        color: #212121;
+    }
+
+    .calendar-navigation {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 5px 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .day-name {
+        font-size: 14px;
+        font-weight: 500;
+        padding: 10px 0;
+        color: #757575;
+    }
+
+    .calendar-dates {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+    }
+
+    .date-cell {
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+        .date-cell:hover {
+            background-color: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+
+        .date-cell.selected {
+            background-color: #212121;
+            color: white;
+            font-weight: bold;
+        }
+
+        .date-cell.today {
+            border: 2px solid #212121;
+        }
+
+        .date-cell.past {
+            color: #BDBDBD;
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+        }
+
+        .date-cell.empty {
+            background-color: transparent;
+            cursor: default;
+            border: none;
+        }
+
+    /* Time Selection Styles */
+    .time-selection {
+        margin-top: 20px;
+    }
+
+        .time-selection h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #212121;
+        }
+
+    .time-section {
+        margin-bottom: 20px;
+    }
+
+        .time-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #757575;
+        }
+
+    .time-slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+    }
+
+    .time-slot {
+        padding: 12px;
+        text-align: center;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+        .time-slot:hover {
+            background-color: #f5f5f5;
+        }
+
+        .time-slot.selected {
+            background-color: #212121;
+            color: white;
+            border-color: #212121;
+        }
+
+        .time-slot.unavailable {
+            background-color: #f9f9f9;
+            color: #BDBDBD;
+            cursor: not-allowed;
+        }
+
+    @@media (max-width: 600px) {
+        .reservation-header h1 {
+            font-size: 28px;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .time-slots {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+</style>
+
+<script>document.addEventListener('DOMContentLoaded', function () {
+        // Variables to store selection
+        let selectedDateValue = '';
+        let selectedTimeValue = '';
+        const toggleCalendar = document.getElementById('toggleCalendar');
+        const calendarSection = document.getElementById('calendarSection');
+        const timeSelectionSection = document.getElementById('timeSelectionSection');
+        const selectedDateTimeDisplay = document.getElementById('selectedDateTimeDisplay');
+        const reservationDateInput = document.getElementById('reservationDateInput');
+        const reservationTimeInput = document.getElementById('reservationTimeInput');
+        const submitButton = document.getElementById('submitButton');
+        const confirmDateTimeButton = document.getElementById('confirmDateTime');
+        const customerFullNameInput = document.getElementById('customerFullName');
+        const customerPhoneInput = document.getElementById('customerPhone');
+
+        // Toggle calendar view
+        toggleCalendar.addEventListener('click', function () {
+            if (calendarSection.style.display === 'none') {
+                calendarSection.style.display = 'block';
+            } else {
+                calendarSection.style.display = 'none';
+            }
+        });
+
+        // Date selection
+        const dateElements = document.querySelectorAll('.date-cell:not(.empty):not(.past)');
+        dateElements.forEach(element => {
+            element.addEventListener('click', function () {
+                // Remove selection from all dates
+                document.querySelectorAll('.date-cell').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                // Add selection to clicked date
+                this.classList.add('selected');
+                selectedDateValue = this.getAttribute('data-date');
+
+                // Update hidden input
+                reservationDateInput.value = selectedDateValue;
+
+                // Show time selection after date is selected
+                timeSelectionSection.style.display = 'block';
+            });
+        });
+
+        // Time selection
+        const timeElements = document.querySelectorAll('.time-slot:not(.unavailable)');
+        timeElements.forEach(element => {
+            element.addEventListener('click', function () {
+                // Remove selection from all times
+                document.querySelectorAll('.time-slot').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                // Add selection to clicked time
+                this.classList.add('selected');
+                selectedTimeValue = this.getAttribute('data-time');
+
+                // Update hidden input
+                reservationTimeInput.value = selectedTimeValue;
+            });
+        });
+
+        // Confirm date and time selection
+        confirmDateTimeButton.addEventListener('click', function () {
+            if (selectedDateValue && selectedTimeValue) {
+                // Format date for display
+                const dateParts = selectedDateValue.split('-');
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+                selectedDateTimeDisplay.value = `${formattedDate} - ${selectedTimeValue}`;
+                calendarSection.style.display = 'none';
+
+                // Check if we can enable submit button
+                checkFormCompletion();
+            } else {
+                // Show error if either date or time is not selected
+                if (!selectedDateValue) {
+                    alert('Zəhmət olmasa tarix seçin.');
+                } else if (!selectedTimeValue) {
+                    alert('Zəhmət olmasa saat seçin.');
+                }
+            }
+        });
+
+        // Month navigation
+        document.getElementById('prevMonth').addEventListener('click', function () {
+            changeMonth(-1);
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', function () {
+            changeMonth(1);
+        });
+
+        // Check form completion function
+        function checkFormCompletion() {
+            if (selectedDateValue &&
+                selectedTimeValue &&
+                customerFullNameInput.value.trim() !== '' &&
+                customerPhoneInput.value.trim() !== '') {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+
+        // Monitor customer info fields
+        customerFullNameInput.addEventListener('input', checkFormCompletion);
+        customerPhoneInput.addEventListener('input', checkFormCompletion);
+
+        function changeMonth(direction) {
+            const monthDisplay = document.getElementById('currentMonth');
+            const currentText = monthDisplay.textContent.split(' ');
+            const monthNames = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
+
+            let year = parseInt(currentText[1]);
+            let monthIndex = monthNames.indexOf(currentText[0]);
+
+            monthIndex += direction;
+
+            if (monthIndex < 0) {
+                monthIndex = 11;
+                year--;
+            } else if (monthIndex > 11) {
+                monthIndex = 0;
+                year++;
+            }
+
+            // In a real implementation, this would update the calendar dates
+            monthDisplay.textContent = `${monthNames[monthIndex]} ${year}`;
+
+            // Here you would typically call an AJAX function to get the new month's calendar
+            // and update the calendar dates and available time slots
+        }
+
+        // Initialize with submit button disabled until all required fields are filled
+        submitButton.disabled = true;
+
+        // Check if today is available and select it initially
+        const today = new Date();
+        const formattedToday = today.getFullYear() + '-' +
+            (today.getMonth() + 1).toString().padStart(2, '0') + '-' +
+            today.getDate().toString().padStart(2, '0');
+
+        const todayCell = document.querySelector(`.date-cell[data-date="${formattedToday}"]`);
+        if (todayCell && !todayCell.classList.contains('past')) {
+            // Don't auto-select just highlight it
+            todayCell.classList.add('today');
+        }
+    });</script>

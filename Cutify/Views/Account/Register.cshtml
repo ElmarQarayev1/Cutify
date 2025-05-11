@@ -1,0 +1,302 @@
+﻿@model Cutify.Models.ViewModels.RegisterVM
+
+@{
+    ViewData["Title"] = "Qeydiyyat";
+}
+
+<div class="auth-container">
+    <div class="back-button">
+        <a asp-action="index" asp-controller="home"><span>&lt;</span></a>
+    </div>
+
+    <h1 class="auth-title">Qeydiyyatdan keç</h1>
+    <p class="auth-subtitle">Şəxsi hesabını yarat və salon işlərini daha effektiv şəkildə idarə et.</p>
+
+    <form method="post" enctype="multipart/form-data" class="auth-form">
+        @* Ümumi model səhvləri *@
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="profile-image-upload">
+            <div class="profile-placeholder">
+                <span class="profile-icon"></span>
+            </div>
+            <label asp-for="ImageFile">Şəkil yüklə</label>
+            <input asp-for="ImageFile" type="file" class="form-control" />
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label asp-for="FirstName">Adın</label>
+                <input asp-for="FirstName" type="text" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group col-md-6">
+                <label asp-for="LastName">Soyadın</label>
+                <input asp-for="LastName" type="text" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email">E-poçt ünvanın</label>
+            <input asp-for="Email" type="email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="WorkPlaceAddress">İş yeri ünvanın</label>
+            <input asp-for="WorkPlaceAddress" type="text" class="form-control" />
+            <span asp-validation-for="WorkPlaceAddress" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">Şifrən</label>
+            <div class="password-container">
+                <input asp-for="Password" type="password" class="form-control" />
+                <span class="password-toggle">
+                    <img src="~/img/eye.webp" alt="Toggle password" />
+                </span>
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Qeydiyyatdan keç</button>
+    </form>
+
+    <div class="login-link text-center mt-3">
+        <span>Hesabın var?</span>
+        <a asp-action="login" asp-controller="account">Daxil ol</a>
+    </div>
+</div>
+
+<style>
+    .login-link {
+        font-size: 17px;
+        color: #555;
+    }
+
+        .login-link a {
+            color: black;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .login-link a:hover {
+                text-decoration: underline;
+            }
+
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+    }
+
+    .auth-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+    }
+
+    .back-button a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+        font-size: 24px;
+        color: #000;
+        margin-bottom: 20px;
+    }
+
+    .auth-title {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .auth-subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.5;
+    }
+
+    .auth-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .auth-form .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+        .password-container input {
+            padding-right: 40px;
+        }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+
+        .password-toggle img {
+            width: 20px;
+            height: 20px;
+        }
+
+    .forgot-password {
+        text-align: right;
+        margin-bottom: 30px;
+    }
+
+        .forgot-password a {
+            color: #000;
+            text-decoration: none;
+        }
+
+    .btn-primary {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 15px;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .profile-image-upload {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-placeholder {
+        width: 60px;
+        height: 60px;
+        background-color: #eee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+
+    .profile-icon::before {
+        content: "";
+        display: block;
+        width: 24px;
+        height: 24px;
+        background-color: #ccc;
+        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>');
+        mask-repeat: no-repeat;
+        mask-position: center;
+    }
+
+    .upload-button {
+        display: flex;
+        align-items: center;
+        background-color: transparent;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .upload-icon {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" /></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    @@media (max-width: 768px) {
+        .auth-container {
+            height: 100vh;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding-top: 40px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .form-row {
+            display: flex;
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+            .form-row > .form-group {
+                padding-left: 10px;
+                padding-right: 10px;
+                flex: 1;
+            }
+
+        .btn-primary {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            border-radius: 0;
+            padding: 20px;
+        }
+    }
+
+    @@media (min-width: 769px) {
+        .auth-container {
+            margin-top: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+
+        .form-row {
+            display: flex;
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+            .form-row > .form-group {
+                padding-left: 10px;
+                padding-right: 10px;
+                flex: 1;
+            }
+    }
